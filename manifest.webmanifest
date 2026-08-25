@@ -1,0 +1,12 @@
+{
+  "name": "RAUM+ 策展觀看",
+  "short_name": "策展觀看",
+  "description": "把每次看展變成可回看、可比較、可轉化的判斷。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f6f5",
+  "theme_color": "#f7f6f5",
+  "icons": [{"src":"assets/raum-lab-logo.png","sizes":"any","type":"image/png","purpose":"any maskable"}]
+}

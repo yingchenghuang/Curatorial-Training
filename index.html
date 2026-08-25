@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f7f6f5">
+  <meta name="description" content="RAUM+ 策展觀看思維訓練：把每次看展變成可回看、可比較、可轉化的判斷。">
+  <title>策展觀看｜RAUM+</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/raum-lab-logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Newsreader:ital,wght@0,400;1,400&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+  <a class="skip-link" href="#app">跳到主要內容</a>
+  <div class="app-shell">
+    <main id="app" tabindex="-1"></main>
+    <nav class="bottom-nav" aria-label="主要導覽">
+      <button data-route="today"><span>◷</span>今日</button>
+      <button data-route="index"><span>▤</span>索引</button>
+      <button data-route="principles"><span>＋</span>原則</button>
+      <button data-route="export"><span>↗</span>轉化</button>
+    </nav>
+  </div>
+  <dialog id="entryDialog" class="entry-dialog">
+    <form id="entryForm" method="dialog">
+      <header><div><small>FIRST TEMPO / 第一拍</small><h2>新一場觀看</h2></div><button value="cancel" aria-label="關閉">×</button></header>
+      <label>展覽名稱<input name="name" required maxlength="80" placeholder="先寫下你正在看的展覽"></label>
+      <div class="form-pair"><label>地點<input name="place" maxlength="80"></label><label>日期<input name="date" type="date" required></label></div>
+      <label>第一眼<textarea name="firstSight" rows="3" maxlength="500" placeholder="還沒讀文字以前，什麼先讓你停下來？"></textarea></label>
+      <label>速記符號<select name="mark"><option>★ 值得偷學</option><option>× 結構性失敗</option><option>→ 動線</option><option>↔ 作品對話</option><option>○ 停留點</option><option>! 意外</option><option>? 待查證</option><option>∆ 可轉化</option></select></label>
+      <footer><button value="cancel" class="text-button">取消</button><button value="default" class="primary-button">保存到本機 →</button></footer>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js?v=3" defer></script>
+</body>
+</html>
