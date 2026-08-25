@@ -88,11 +88,11 @@ function screenBar(left,right,leftRoute='today'){
 function todayPage(){
   const filters=['全部','待判斷','深挖','已轉化'];
   const rows=state.records.filter(r=>state.filter==='全部'||r.status===state.filter).slice(0,5);
-  return `<section class="page"><div class="screen-bar"><button class="screen-brand" data-route="today"><i></i>RAUM+ / 策展觀看</button><a href="https://raumlaboratory.com/" target="_blank" rel="noreferrer">作品網站 ↗</a></div>
+  return `<section class="page"><div class="screen-bar"><button class="screen-brand" data-route="today"><i></i>RAUM+ / 策展思維</button><a href="https://raumlaboratory.com/" target="_blank" rel="noreferrer">作品網站 ↗</a></div>
     <div class="hero">
       <div><img class="hero-logo" src="assets/raum-lab-logo.png" alt="RAUM+ 藝術與開放空間實驗室"></div>
-      <div class="hero-meta">黃英誠的策展觀看系統<br>Eason Huang’s Curatorial Field System</div>
-      <div class="hero-copy"><h1 class="display">策展<br>觀看</h1><p class="subhead">看得少，判斷得清楚。</p>
+      <div class="hero-meta">黃英誠的策展判斷系統<br>Eason Huang’s Curatorial Field System</div>
+      <div class="hero-copy"><h1 class="display">策展思維</h1><p class="subhead">看得少，判斷得清楚。</p>
         <div class="count"><strong id="exhibitionCount">${String(state.count).padStart(2,'0')}</strong> EXHIBITIONS <i>/</i> <strong>03</strong> PENDING</div>
         <div class="calibration-strip"><span>THREE TEMPOS</span><button data-route="drift">CALIB / 25</button><button data-route="principles">PRINCIPLES v3</button></div>
       </div>

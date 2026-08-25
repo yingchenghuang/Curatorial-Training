@@ -26,3 +26,7 @@ python3 -m http.server 4173
 純靜態 HTML、CSS、JavaScript，無建置步驟、無外部資料庫，可直接部署到 GitHub Pages。
 
 設計系統沿用 RAUM+：紙白 `#f7f6f5`、墨黑 `#111`、識別藍 `#003dff`、線灰 `#b9b8b5`；標題採 Noto Serif TC，介面採 Archivo，英文斜體採 Newsreader。
+
+## GitHub Pages
+
+第一次部署前，先在儲存庫 **Settings → Pages** 將來源設為 **GitHub Actions**，再到 **Actions → Deploy Curatorial Training → Run workflow**。之後可隨時以同一個工作流程重新部署。
