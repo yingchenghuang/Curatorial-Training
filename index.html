@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700;900&family=Noto+Sans+TC:wght@400;500;700&family=Newsreader:ital,wght@0,400;1,400&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
   <a class="skip-link" href="#app">跳到主要內容</a>
@@ -27,14 +27,70 @@
   <dialog id="entryDialog" class="entry-dialog">
     <form id="entryForm" method="dialog">
       <header><div><small>FIRST TEMPO / 第一拍</small><h2>新一場觀看</h2></div><button value="cancel" aria-label="關閉">×</button></header>
-      <label>展覽名稱<input name="name" required maxlength="80" placeholder="先寫下你正在看的展覽"></label>
+      <div class="quick-intro"><strong>60–90 秒完成</strong><span>先記直覺，再做判斷。</span></div>
+      <label>展覽名稱<input name="name" required maxlength="80" placeholder="正在看的展覽"></label>
       <div class="form-pair"><label>地點<input name="place" maxlength="80"></label><label>日期<input name="date" type="date" required></label></div>
-      <label>第一眼<textarea name="firstSight" rows="3" maxlength="500" placeholder="還沒讀文字以前，什麼先讓你停下來？"></textarea></label>
-      <label>速記符號<select name="mark"><option>★ 值得偷學</option><option>× 結構性失敗</option><option>→ 動線</option><option>↔ 作品對話</option><option>○ 停留點</option><option>! 意外</option><option>? 待查證</option><option>∆ 可轉化</option></select></label>
-      <footer><button value="cancel" class="text-button">取消</button><button value="default" class="primary-button">保存到本機 →</button></footer>
+      <label>第一眼<textarea name="firstSight" rows="2" maxlength="800" placeholder="什麼先讓你停下來？"></textarea></label>
+      <label>身體反應<textarea name="bodyResponse" rows="2" maxlength="800" placeholder="速度、距離、聲音、光或溫度"></textarea></label>
+      <section class="edit-section quick-filter"><div class="edit-section-title"><h3>三十秒判斷</h3><output id="entryFilterPreview">0 / 3</output></div><p class="form-help">直接點選成立的項目。</p><div class="check-list">
+        <label><input name="filter0" type="checkbox">有一組並置讓我停下來超過三十秒</label><label><input name="filter1" type="checkbox">有一個以前沒看過的空間決策</label><label><input name="filter2" type="checkbox">有一個策展假設讓我想反駁</label>
+      </div></section>
+      <section class="edit-section quick-score"><div class="edit-section-title"><h3>五維快評</h3><output id="entryScorePreview">0 / 25</output></div><div class="score-inputs"><label>命題<input name="entryDimension0" type="number" min="0" max="5" placeholder="–"></label><label>並置<input name="entryDimension1" type="number" min="0" max="5" placeholder="–"></label><label>空間<input name="entryDimension2" type="number" min="0" max="5" placeholder="–"></label><label>場域<input name="entryDimension3" type="number" min="0" max="5" placeholder="–"></label><label>倫理<input name="entryDimension4" type="number" min="0" max="5" placeholder="–"></label></div></section>
+      <details class="edit-section quick-more"><summary>補充資料（可略過）</summary>
+        <label>藝術家／策展人<input name="creators" maxlength="140"></label><div class="form-pair"><label>觀看分鐘<input name="duration" type="number" min="0" max="1440"></label><label>英文名稱<input name="en" maxlength="100"></label></div>
+        <label>今天的單一觀看任務<textarea name="viewingTask" rows="2" maxlength="500" placeholder="這一場，我只想確認什麼？"></textarea></label><label>第一個問題<textarea name="firstQuestion" rows="2" maxlength="600"></textarea></label><label>一組並置<textarea name="juxtaposition" rows="3" maxlength="1000"></textarea></label><label>空間決策<textarea name="spatialDecision" rows="3" maxlength="1000"></textarea></label>
+        <label>速記符號<select name="mark"><option>★ 值得偷學</option><option>× 結構性失敗</option><option>→ 動線</option><option>↔ 作品對話</option><option>○ 停留點</option><option>! 意外</option><option>? 待查證</option><option>∆ 可轉化</option></select></label>
+      </details>
+      <footer class="sticky-form-actions"><button value="cancel" class="text-button">取消</button><button value="default" class="primary-button">完成快評 →</button></footer>
+    </form>
+  </dialog>
+  <dialog id="editDialog" class="entry-dialog edit-dialog">
+    <form id="editForm" method="dialog">
+      <input type="hidden" name="recordId">
+      <header><div><small>PROJECT EDITOR / 專案編輯</small><h2>修改這則專案</h2></div><button value="cancel" aria-label="關閉">×</button></header>
+      <section class="edit-section">
+        <h3>基本資料</h3>
+        <label>展覽名稱<input name="name" required maxlength="80"></label>
+        <label>英文名稱<input name="en" maxlength="120"></label><label>藝術家／策展人<input name="creators" maxlength="140"></label>
+        <div class="form-pair"><label>地點<input name="place" maxlength="80"></label><label>關鍵字<input name="keywords" maxlength="160"></label></div>
+        <div class="form-grid-four"><label>年份<input name="year" type="number" min="1900" max="2200"></label><label>日期<input name="date" inputmode="decimal" placeholder="08.14" pattern="[0-9]{2}\.[0-9]{2}"></label><label>停留分鐘<input name="duration" type="number" min="0" max="1440"></label><label>狀態<select name="status"><option>待判斷</option><option>深挖</option><option>已轉化</option><option>不轉化</option></select></label></div>
+        <label>出海口<input name="outlet" maxlength="40" placeholder="例如：ⓐ 公共藝術"></label>
+      </section>
+      <section class="edit-section"><div class="edit-section-title"><h3>三十秒否決</h3><output id="filterPreview">0 / 3</output></div><div class="check-list">
+        <label><input name="filter0" type="checkbox">有一組並置讓我停下來超過三十秒</label><label><input name="filter1" type="checkbox">有一個以前沒看過的空間決策</label><label><input name="filter2" type="checkbox">有一個策展假設讓我想反駁</label>
+      </div></section>
+      <section class="edit-section">
+        <div class="edit-section-title"><h3>五維校準</h3><output id="scorePreview">0 / 25</output></div>
+        <p class="form-help">每項 0–5 分，總分會自動更新到面板、索引與匯出資料。</p>
+        <div class="score-inputs">
+          <label>命題<input name="dimension0" type="number" min="0" max="5" required></label><label>並置<input name="dimension1" type="number" min="0" max="5" required></label><label>空間<input name="dimension2" type="number" min="0" max="5" required></label><label>場域<input name="dimension3" type="number" min="0" max="5" required></label><label>倫理<input name="dimension4" type="number" min="0" max="5" required></label>
+        </div>
+      </section>
+      <details class="edit-section advanced-scores">
+        <summary>十維校準 / 100</summary>
+        <p class="form-help">每項 0–10 分，可獨立調整進階校準數值。</p>
+        <div class="score-inputs score-inputs-ten">
+          <label>命題<input name="dimension100_0" type="number" min="0" max="10"></label><label>作品選擇<input name="dimension100_1" type="number" min="0" max="10"></label><label>作品關係<input name="dimension100_2" type="number" min="0" max="10"></label><label>空間<input name="dimension100_3" type="number" min="0" max="10"></label><label>節奏<input name="dimension100_4" type="number" min="0" max="10"></label><label>場域<input name="dimension100_5" type="number" min="0" max="10"></label><label>研究<input name="dimension100_6" type="number" min="0" max="10"></label><label>公共性<input name="dimension100_7" type="number" min="0" max="10"></label><label>倫理<input name="dimension100_8" type="number" min="0" max="10"></label><label>觀眾<input name="dimension100_9" type="number" min="0" max="10"></label>
+        </div>
+      </details>
+      <section class="edit-section">
+        <h3>觀看內文</h3>
+        <label>觀看任務<textarea name="detail0" rows="3" maxlength="1200"></textarea></label>
+        <label>第一眼<textarea name="detail1" rows="3" maxlength="1200"></textarea></label>
+        <label>身體反應<textarea name="detail2" rows="3" maxlength="1200"></textarea></label>
+        <label>第一個問題<textarea name="detail3" rows="3" maxlength="1200"></textarea></label>
+        <label>一組並置<textarea name="detail4" rows="5" maxlength="1800"></textarea></label>
+        <label>空間決策<textarea name="detail5" rows="4" maxlength="1600"></textarea></label>
+        <label>一句話命題<textarea name="detail6" rows="3" maxlength="1200"></textarea></label>
+        <label>最大失敗<textarea name="detail7" rows="4" maxlength="1600"></textarea></label>
+        <label>策展手術<textarea name="detail8" rows="4" maxlength="1600"></textarea></label>
+        <label>方法轉化<textarea name="detail9" rows="4" maxlength="1600"></textarea></label>
+        <label>一句話收藏<textarea name="quote" rows="3" maxlength="1000"></textarea></label>
+      </section>
+      <footer class="sticky-form-actions"><button value="cancel" class="text-button">取消</button><button type="button" class="primary-button" data-save-edit>保存修改 →</button></footer>
     </form>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=5" defer></script>
+  <script src="app.js?v=9" defer></script>
 </body>
 </html>

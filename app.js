@@ -4,7 +4,8 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const BLUE = '#003dff';
 const INK = '#111';
 const LINE = '#b9b8b5';
-const STORAGE_KEY = 'raum-curatorial-training-v2';
+const STORAGE_KEY = 'raum-curatorial-training-v3';
+const LEGACY_STORAGE_KEY = 'raum-curatorial-training-v2';
 
 const seedRecords = [
   ['27','08.14','退潮之後','After the Tide','基隆西二倉庫','檔案／水位／缺席',21,'ⓐ','深挖'],
@@ -45,14 +46,42 @@ const principles = [
   {no:'06',ver:'V3',q:'我希望自己的策展最終改變什麼？',a:'讓一個地方被重新看見，而且在展覽結束後還繼續被那樣看。',history:[['v2 · 11','讓觀眾對某個議題有新的理解。'],['v1 · 01','讓更多人來看展。']]},
 ];
 
-const detailFields = [
-  ['01','三十秒否決','FILTER','通過兩題 — 並置讓我停超過三十秒，策展假設想反駁。空間決策不算新。'],
+const defaultDetailFields = [
+  ['01','觀看任務','VIEWING TASK','確認檔案如何取代人，成為港口的主要敘事者。'],
   ['02','第一眼','FIRST SIGHT','倉庫盡頭那道被封起來的門，光從縫裡漏出來。'],
-  ['03','一組並置','JUXTAPOSITION','《潮線》錄像 ↔ 對面牆的《船籍登記簿》。第二跨距，相距七公尺。錄像裡的水位變成名冊的時間軸；兩件單看都只是檔案，並置後變成「誰被記錄下來」。'],
-  ['04','一句話命題','THESIS','當一個港口的紀錄比它的人更長壽，記錄本身算不算一種驅逐？'],
-  ['05','最大失敗','FAILURE','假設觀眾會逆著動線讀完名冊。實際上九成的人看了三頁就走。'],
-  ['06','策展手術','RE-CURATE','刪掉入口 800 字論述；把名冊移到入口正對面成為第一件作品；給《潮線》多三公尺退距；環境音壓三成。'],
+  ['03','身體反應','BODY RESPONSE','走到最暗的跨距時自然放慢，退後兩步才看清楚水位線。'],
+  ['04','第一個問題','FIRST QUESTION','為什麼所有名冊都面向海，而不是面向觀眾？'],
+  ['05','一組並置','JUXTAPOSITION','《潮線》錄像 ↔ 對面牆的《船籍登記簿》。錄像裡的水位變成名冊的時間軸；兩件單看都只是檔案，並置後變成「誰被記錄下來」。'],
+  ['06','空間決策','SPATIAL DECISION','封門讓觀眾必須繞行，延長了抵達名冊前的等待。'],
+  ['07','一句話命題','THESIS','當一個港口的紀錄比它的人更長壽，記錄本身算不算一種驅逐？'],
+  ['08','最大失敗','FAILURE','假設觀眾會逆著動線讀完名冊。實際上九成的人看了三頁就走。'],
+  ['09','策展手術','RE-CURATE','刪掉入口 800 字論述；把名冊移到入口正對面成為第一件作品；給《潮線》多三公尺退距；環境音壓三成。'],
+  ['10','方法轉化','TRANSFER','把「繞行」轉化成下一個公共藝術案的延遲抵達測試。'],
 ];
+const filterQuestions = ['有一組並置讓我停下來超過三十秒','有一個以前沒看過的空間決策','有一個策展假設讓我想反駁'];
+
+function recordDefaults(record){
+  const score = record.score === null || record.score === '' || record.score === undefined ? null : Number(record.score);
+  const base = score === null ? [0,0,0,0,0] : [
+    Math.min(5, Math.max(0, Math.round(score * .24))),
+    Math.min(5, Math.max(0, Math.round(score * .20))),
+    Math.min(5, Math.max(0, Math.round(score * .20))),
+    Math.min(5, Math.max(0, Math.round(score * .22))),
+    0,
+  ];
+  if(score !== null) base[4] = Math.min(5, Math.max(0, score - base.slice(0,4).reduce((sum,value)=>sum+value,0)));
+  const isReference = record.no === '27';
+  return {
+    duration: record.duration || '74', year: record.year || '2026',
+    creators: record.creators || '',
+    filterChecks: Array.isArray(record.filterChecks) ? record.filterChecks.map(Boolean) : (isReference ? [true,false,true] : [false,false,false]),
+    dimensions: Array.isArray(record.dimensions) ? record.dimensions.map(value=>Number(value)||0) : (isReference ? [5,4,4,5,3] : base),
+    dimensions100: Array.isArray(record.dimensions100) ? record.dimensions100.map(value=>Number(value)||0) : (isReference ? [9,7,8,8,6,9,7,6,5,5] : [0,0,0,0,0,0,0,0,0,0]),
+    details: Array.isArray(record.details) ? record.details : defaultDetailFields.map(field=>isReference ? field[3] : ''),
+    quote: record.quote ?? (isReference ? '一份比人活得更久的名冊，最後把人擠出了自己的港口。' : ''),
+    ...record,
+  };
+}
 
 const totals = [14,17,11,19,13,21,9,16,22,12,15,18,10,20,13,16,23,11,17,14,21,12,19,15,20,18,21];
 const trendSeries = {命題:[3,3,4,4,4,5,4,5,5],並置:[4,3,4,4,3,4,4,4,4],空間:[4,4,3,4,4,3,4,4,4],場域:[3,3,3,4,4,4,4,5,5],倫理:[4,4,3,3,3,3,2,3,3]};
@@ -61,16 +90,20 @@ const deltas = {命題:'+0.7',並置:'+0.1',空間:'±0.0',場域:'+0.9',倫理:
 const state = {
   route: location.hash.slice(1) || 'today', filter:'全部', indexMode:'mine', scale:25,
   openField:2, openPrinciple:0, activeBar:26, activeTrend:'倫理', destination:'Notion', scope:'只深挖',
-  records: loadRecords(), selected:'27', count:0,
+  records: loadRecords(), selected:'27',
 };
 
 function loadRecords(){
-  try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(saved) ? [...saved, ...seedRecords] : seedRecords; }
-  catch { return seedRecords; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if(Array.isArray(saved)) return saved.map(recordDefaults);
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
+    const legacyCustom = Array.isArray(legacy) ? legacy : [];
+    return [...legacyCustom, ...seedRecords].map(recordDefaults);
+  } catch { return seedRecords.map(recordDefaults); }
 }
-function saveUserRecords(){
-  const custom = state.records.filter(record => record.custom);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(custom));
+function saveRecords(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
 }
 function escapeHTML(value=''){ return String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char])); }
 function routeTo(route){ state.route = route; location.hash = route; render(); scrollTo({top:0,behavior:'smooth'}); }
@@ -88,17 +121,20 @@ function screenBar(left,right,leftRoute='today'){
 function todayPage(){
   const filters=['全部','待判斷','深挖','已轉化'];
   const rows=state.records.filter(r=>state.filter==='全部'||r.status===state.filter).slice(0,5);
+  const scored=state.records.filter(record=>Number.isFinite(Number(record.score))&&record.score!==null);
+  const average=scored.length?(scored.reduce((sum,record)=>sum+Number(record.score),0)/scored.length).toFixed(1):'—';
+  const pending=state.records.filter(record=>record.status==='待判斷').length;
   return `<section class="page"><div class="screen-bar"><button class="screen-brand" data-route="today"><i></i>RAUM+ / 策展思維</button><a href="https://raumlaboratory.com/" target="_blank" rel="noreferrer">作品網站 ↗</a></div>
     <div class="hero">
       <div><img class="hero-logo" src="assets/raum-lab-logo.png" alt="RAUM+ 藝術與開放空間實驗室"></div>
       <div class="hero-meta">黃英誠的策展判斷系統<br>Eason Huang’s Curatorial Field System</div>
       <div class="hero-copy"><h1 class="display">策展思維</h1><p class="subhead">看得少，判斷得清楚。</p>
-        <div class="count"><strong id="exhibitionCount">${String(state.count).padStart(2,'0')}</strong> EXHIBITIONS <i>/</i> <strong>03</strong> PENDING</div>
+        <div class="count"><strong id="exhibitionCount">${String(state.records.length).padStart(2,'0')}</strong> EXHIBITIONS <i>/</i> <strong>${String(pending).padStart(2,'0')}</strong> PENDING</div>
         <div class="calibration-strip"><span>THREE TEMPOS</span><button data-route="drift">CALIB / 25</button><button data-route="principles">PRINCIPLES v3</button></div>
       </div>
     </div>
     <div class="section"><div class="filters">${filters.map(f=>`<button class="filter ${state.filter===f?'active':''}" data-filter="${f}">${f}</button>`).join('')}</div>
-      <div class="status">SHOWING ${rows.length} OF ${state.records.length} — ${state.filter==='全部'?'平均 16.4 / 25':'篩選：'+state.filter}</div>
+      <div class="status">SHOWING ${rows.length} OF ${state.records.length} — ${state.filter==='全部'?`平均 ${average} / 25`:'篩選：'+state.filter}</div>
       <div class="section-head"><h2>LATEST NOTES <small>最新紀錄</small></h2><button data-route="index">VIEW ALL →</button></div>
       <div>${rows.map(recordRow).join('')}</div>
     </div>
@@ -113,16 +149,21 @@ function recordRow(r){
 
 function detailPage(){
   const r=state.records.find(x=>x.no===state.selected)||state.records[0];
-  const dimensions = state.scale===25 ? [['命題',5],['並置',4],['空間',4],['場域',5],['倫理',3]] : [['命題',9],['作品選擇',7],['作品關係',8],['空間',8],['節奏',6],['場域',9],['研究',7],['公共性',6],['倫理',5],['觀眾',5]];
+  const dimensionNames25=['命題','並置','空間','場域','倫理'];
+  const dimensionNames100=['命題','作品選擇','作品關係','空間','節奏','場域','研究','公共性','倫理','觀眾'];
+  const dimensionValues=state.scale===25?r.dimensions:r.dimensions100;
+  const dimensions=(state.scale===25?dimensionNames25:dimensionNames100).map((name,index)=>[name,dimensionValues[index]??0]);
   const max=state.scale===25?5:10;
+  const total=dimensionValues.reduce((sum,value)=>sum+(Number(value)||0),0);
   return `<section class="page">${screenBar('← 年度索引',`${escapeHTML(r.no)} / ${state.records.length}`,'index')}
-    <div class="detail-layout"><header class="detail-head"><div class="detail-no">NO. ${escapeHTML(r.no)} / ${escapeHTML(r.outlet||'待判斷')}</div><h1>${escapeHTML(r.name)}</h1><em>${escapeHTML(r.en||'Field Note')}</em><div class="detail-meta">${escapeHTML(r.place)} · 2026.${escapeHTML(r.date)} · 74′</div></header>
+    <div class="detail-layout"><header class="detail-head"><div class="detail-title-row"><div class="detail-no">NO. ${escapeHTML(r.no)} / ${escapeHTML(r.outlet||r.status||'待判斷')}</div><button class="edit-record-button" data-edit-record="${escapeHTML(r.no)}">編輯這則專案</button></div><h1>${escapeHTML(r.name)}</h1><em>${escapeHTML(r.en||'Field Note')}</em><div class="detail-meta">${escapeHTML(r.place)} · ${escapeHTML(r.year)}.${escapeHTML(r.date)} · ${escapeHTML(r.duration)}′${r.creators?`<br>${escapeHTML(r.creators)}`:''}</div></header>
       <div class="score-panel"><div class="score-toolbar"><span class="detail-no">${state.scale===25?'五維':'十維'}校準 / CALIBRATION</span><div class="segmented"><button data-scale="25" class="${state.scale===25?'active':''}">/25</button><button data-scale="100" class="${state.scale===100?'active':''}">/100</button></div></div>
-        <div class="score-total"><strong>${state.scale===25?(r.score??'—'):r.score?Math.round(r.score/25*100):'—'}</strong><span>/ ${state.scale}</span><em>${r.score?'通過兩題．深挖名單':'尚待校準'}</em></div>
+        <div class="score-total"><strong>${total||'—'}</strong><span>/ ${state.scale}</span><em>${total?'已完成校準':'尚待校準'}</em></div>
         ${dimensions.map(([name,value])=>`<div class="dimension ${value/max>=.9?'best':''}"><span>${name}</span><div class="meter"><i style="width:${value/max*100}%"></i></div><small>${value} / ${max}</small></div>`).join('')}
       </div>
-      <div class="accordions">${detailFields.map((field,i)=>`<article class="accordion ${state.openField===i?'active':''}" data-field="${i}"><span class="no">${field[0]}</span><div><div class="accordion-head"><h3>${field[1]}</h3><small>${field[2]}</small></div>${state.openField===i?`<p>${field[3]}</p>`:''}</div></article>`).join('')}</div>
-    </div><aside class="quote"><small>ONE LINE TO KEEP IT / 一句話收藏</small><p>一份比人活得更久的名冊，最後把人擠出了自己的港口。</p></aside></section>`;
+      <div class="tempo-block"><div class="tempo-heading"><span>SECOND TEMPO / 離場判斷</span><strong>${r.filterChecks.filter(Boolean).length} / 3</strong></div><div class="filter-checks">${filterQuestions.map((question,index)=>`<div class="${r.filterChecks[index]?'passed':''}"><i>${r.filterChecks[index]?'✓':'—'}</i><span>${question}</span></div>`).join('')}</div></div>
+      <div class="accordions">${defaultDetailFields.map((field,i)=>`<article class="accordion ${state.openField===i?'active':''}" data-field="${i}"><span class="no">${field[0]}</span><div><div class="accordion-head"><h3>${field[1]}</h3><small>${field[2]}</small></div>${state.openField===i?`<p>${escapeHTML(r.details[i]||'尚未填寫')}</p>`:''}</div></article>`).join('')}</div>
+    </div><aside class="quote"><small>ONE LINE TO KEEP IT / 一句話收藏</small><p>${escapeHTML(r.quote||'尚未填寫')}</p></aside></section>`;
 }
 
 function indexPage(){
@@ -206,6 +247,61 @@ function downloadExport(){
   const link=document.createElement('a'); link.href=url; link.download=`策展觀看-${new Date().toISOString().slice(0,10)}.${ext}`; link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000); toast(`已產生 ${records.length} 筆 ${state.destination} 檔案`);
 }
 
+function setFormValue(form,name,value=''){
+  const control=form.elements.namedItem(name);
+  if(control) control.value=value ?? '';
+}
+
+function openEditDialog(recordId){
+  const record=state.records.find(item=>item.no===recordId);
+  if(!record) return;
+  const form=$('#editForm');
+  setFormValue(form,'recordId',record.no);
+  ['name','en','creators','place','keywords','year','date','duration','status','outlet','quote'].forEach(name=>setFormValue(form,name,record[name]));
+  record.filterChecks.forEach((value,index)=>{form.elements.namedItem(`filter${index}`).checked=Boolean(value);});
+  record.dimensions.forEach((value,index)=>setFormValue(form,`dimension${index}`,value));
+  record.dimensions100.forEach((value,index)=>setFormValue(form,`dimension100_${index}`,value));
+  record.details.forEach((value,index)=>setFormValue(form,`detail${index}`,value));
+  updateScorePreview();
+  updateFilterPreview();
+  $('#editDialog').showModal();
+  requestAnimationFrame(()=>form.elements.namedItem('name')?.focus());
+}
+
+function numericFormValue(form,name,max){
+  const value=Number(form.elements.namedItem(name)?.value || 0);
+  return Math.min(max,Math.max(0,Number.isFinite(value)?value:0));
+}
+
+function updateScorePreview(){
+  const form=$('#editForm');
+  if(!form) return;
+  const total=Array.from({length:5},(_,index)=>numericFormValue(form,`dimension${index}`,5)).reduce((sum,value)=>sum+value,0);
+  $('#scorePreview').textContent=`${total} / 25`;
+}
+
+function updateFilterPreview(){
+  const form=$('#editForm');
+  const total=Array.from({length:3},(_,index)=>form.elements.namedItem(`filter${index}`)?.checked).filter(Boolean).length;
+  $('#filterPreview').textContent=`${total} / 3`;
+}
+
+function updateEntryPreview(){
+  const form=$('#entryForm');
+  const passed=Array.from({length:3},(_,index)=>form.elements.namedItem(`filter${index}`)?.checked).filter(Boolean).length;
+  const score=Array.from({length:5},(_,index)=>numericFormValue(form,`entryDimension${index}`,5)).reduce((sum,value)=>sum+value,0);
+  $('#entryFilterPreview').textContent=`${passed} / 3`;
+  $('#entryScorePreview').textContent=`${score} / 25`;
+}
+
+function openEntryDialog(){
+  const form=$('#entryForm');
+  if(!form.elements.namedItem('date').value) form.elements.namedItem('date').value=new Date().toISOString().slice(0,10);
+  updateEntryPreview();
+  $('#entryDialog').showModal();
+  requestAnimationFrame(()=>form.elements.namedItem('name')?.focus());
+}
+
 document.addEventListener('click', event=>{
   const route=event.target.closest('[data-route]'); if(route){routeTo(route.dataset.route);return;}
   const filter=event.target.closest('[data-filter]'); if(filter){state.filter=filter.dataset.filter;render();return;}
@@ -218,15 +314,65 @@ document.addEventListener('click', event=>{
   const trend=event.target.closest('[data-trend]'); if(trend){state.activeTrend=trend.dataset.trend;render();return;}
   const destination=event.target.closest('[data-destination]'); if(destination){state.destination=destination.dataset.destination;render();return;}
   const scope=event.target.closest('[data-scope]'); if(scope){state.scope=scope.dataset.scope;render();return;}
+  const editRecord=event.target.closest('[data-edit-record]'); if(editRecord){openEditDialog(editRecord.dataset.editRecord);return;}
+  if(event.target.closest('[data-save-edit]')){saveEditedRecord();return;}
   if(event.target.closest('[data-download]')){downloadExport();return;}
-  if(event.target.closest('[data-new-entry]')){$('#entryDialog').showModal();}
+  if(event.target.closest('[data-new-entry]')){openEntryDialog();}
+});
+
+$('#entryForm').addEventListener('input',event=>{
+  if(event.target.name?.startsWith('filter')||event.target.name?.startsWith('entryDimension')) updateEntryPreview();
 });
 
 $('#entryForm').addEventListener('submit', event=>{
   if(event.submitter?.value==='cancel') return;
   event.preventDefault(); const data=new FormData(event.currentTarget); const now=new Date(data.get('date')+'T12:00:00');
-  const record={custom:true,no:`L${Date.now()}`,date:`${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`,name:data.get('name'),en:'Local Field Note',place:data.get('place')||'未填地點',keywords:data.get('firstSight')||data.get('mark'),score:null,outlet:'',status:'待判斷'};
-  state.records.unshift(record); saveUserRecords(); event.currentTarget.reset(); $('#entryDialog').close(); state.filter='全部'; routeTo('today'); toast('已保存到這台裝置');
+  const filterChecks=Array.from({length:3},(_,index)=>data.has(`filter${index}`));
+  const passed=filterChecks.filter(Boolean).length;
+  const dimensions=Array.from({length:5},(_,index)=>numericFormValue(event.currentTarget,`entryDimension${index}`,5));
+  const total=dimensions.reduce((sum,value)=>sum+value,0);
+  const details=[data.get('viewingTask'),data.get('firstSight'),data.get('bodyResponse'),data.get('firstQuestion'),data.get('juxtaposition'),data.get('spatialDecision'),'','','',''].map(value=>String(value||'').trim());
+  const record=recordDefaults({custom:true,no:String(state.records.length+1).padStart(2,'0'),date:`${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`,name:data.get('name'),en:data.get('en')||'Local Field Note',creators:data.get('creators')||'',duration:data.get('duration')||'0',place:data.get('place')||'未填地點',keywords:data.get('firstSight')||data.get('mark'),score:total||null,dimensions,outlet:'',status:passed>=2?'深挖':passed===0?'不轉化':'待判斷',filterChecks,details});
+  state.records.unshift(record); saveRecords(); event.currentTarget.reset(); $('#entryDialog').close(); state.filter='全部'; routeTo('today'); toast('已保存到這台裝置');
+});
+
+$('#editForm').addEventListener('input',event=>{
+  if(event.target.name?.startsWith('dimension')&&!event.target.name.startsWith('dimension100')) updateScorePreview();
+  if(event.target.name?.startsWith('filter')) updateFilterPreview();
+});
+
+function saveEditedRecord(){
+  const form=$('#editForm');
+  if(!form.reportValidity()) return;
+  const recordId=form.elements.namedItem('recordId').value;
+  const index=state.records.findIndex(item=>item.no===recordId);
+  if(index<0) return;
+  const dimensions=Array.from({length:5},(_,i)=>numericFormValue(form,`dimension${i}`,5));
+  const dimensions100=Array.from({length:10},(_,i)=>numericFormValue(form,`dimension100_${i}`,10));
+  const details=Array.from({length:10},(_,i)=>form.elements.namedItem(`detail${i}`).value.trim());
+  const filterChecks=Array.from({length:3},(_,i)=>form.elements.namedItem(`filter${i}`).checked);
+  const previous=state.records[index];
+  state.records[index]={
+    ...previous,
+    name:form.elements.namedItem('name').value.trim(), en:form.elements.namedItem('en').value.trim(), creators:form.elements.namedItem('creators').value.trim(),
+    place:form.elements.namedItem('place').value.trim(), keywords:form.elements.namedItem('keywords').value.trim(),
+    year:form.elements.namedItem('year').value || '2026', date:form.elements.namedItem('date').value || previous.date,
+    duration:form.elements.namedItem('duration').value || '0', status:form.elements.namedItem('status').value,
+    outlet:form.elements.namedItem('outlet').value.trim(), quote:form.elements.namedItem('quote').value.trim(),
+    dimensions, dimensions100, filterChecks, details, score:dimensions.reduce((sum,value)=>sum+value,0), edited:true,
+  };
+  saveRecords();
+  $('#editDialog').close();
+  render();
+  toast('專案內容與數值已更新');
+}
+
+$('#editForm [data-save-edit]').addEventListener('click',saveEditedRecord);
+
+$('#editForm').addEventListener('submit',event=>{
+  if(event.submitter?.value==='cancel') return;
+  event.preventDefault();
+  saveEditedRecord();
 });
 
 window.addEventListener('hashchange',()=>{state.route=location.hash.slice(1)||'today';render();});
@@ -235,9 +381,3 @@ function updateNetwork(){ const el=$('#offlineState'); if(el) el.textContent=nav
 
 if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(console.warn));
 updateNetwork(); render();
-const counter=setInterval(()=>{
-  if(state.count>=27){clearInterval(counter);return;}
-  state.count++;
-  const countElement=$('#exhibitionCount');
-  if(countElement) countElement.textContent=String(state.count).padStart(2,'0');
-},42);
